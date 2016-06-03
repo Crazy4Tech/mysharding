@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<settings>
+	    <setting name="driverClassName" value="com.mysql.jdbc.Driver"/>
+		<setting name="username" value="root"/>
+		<setting name="password" value="root"/>
+	    <setting name="initialSize" value="2"/>
+		<setting name="maxActive" value="50"/>
+		<setting name="maxWait" value="5000"/>
+		<setting name="maxIdle" value="5"/>
+		<setting name="minIdle" value="2"/>
+	</settings>
+	
+	<strategies>
+		<strategy name="ts1" type="database" class="org.sharding.configuration.TestDatabaseStrategy" />
+		<strategy name="ts2" type="table" class="org.sharding.configuration.TestTableStrategy" />
+	</strategies>
+	
+	<namenodes>
+		<namenode name="ds_0" loadbalance="">
+			<datanode name="ds_0" accessMode="READ-WRITE" weight="10">
+				<url>
+				<![CDATA[jdbc:mysql://localhost:3306/ds_0]]>
+				</url> 
+			</datanode>
+		</namenode>
+		<namenode name="ds_1" loadbalance="">
+			<datanode name="ds_1" accessMode="READ-WRITE" weight="10">
+				<url>
+				<![CDATA[jdbc:mysql://localhost:3306/ds_1]]>
+				</url> 
+			</datanode>
+		</namenode>
+	</namenodes>
+	
+	<tables>
+		<table name="t_order" databaseShardingStrategy="ts1" databaseShardingColumns="user_id" tableShardingStrategy="ts2" tableShardingColumns="order_id">
+			<namenodes>
+				<namenode ref="ds_0" tablenames="t_order_0,t_order_1" />
+				<namenode ref="ds_1" tablenames="t_order_0,t_order_1" />
+			</namenodes>
+		</table>
+		
+		<table name="t_order_item" databaseShardingStrategy="ts1" databaseShardingColumns="user_id" tableShardingStrategy="ts2" tableShardingColumns="order_id">
+			<namenodes>
+				<namenode ref="ds_0" tablenames="t_order_item_0,t_order_item_1" />
+				<namenode ref="ds_1" tablenames="t_order_item_0,t_order_item_1" />
+			</namenodes>
+		</table>
+	</tables>
+</configuration>

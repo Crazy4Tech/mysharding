@@ -1,0 +1,20 @@
+package org.sharding.parser.mysql;
+
+
+import org.sharding.shard.Table;
+
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
+/**
+ * 
+ * @author wenlong.liu
+ *
+ */
+public class MySQLUpdateVisitor extends AbstractVisitor  {
+
+	@Override
+	public boolean visit(final MySqlDeleteStatement x) {
+		Table table = new Table(x.getTableSource().toString(), x.getTableSource().getAlias());
+		this.getParseResult().addTable(table);
+        return super.visit(x);
+    }
+}
