@@ -3,7 +3,6 @@ package org.sharding.parser.mysql;
 import org.sharding.router.DataSourceMapping;
 import org.sharding.shard.ShardUtil;
 
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
 
@@ -12,8 +11,8 @@ public class MySqlPrintVisitor extends MySqlOutputVisitor {
 	
 	DataSourceMapping mapping;
 	
-	public MySqlPrintVisitor(DataSourceMapping mapping){
-		super(new StringBuffer());
+	public MySqlPrintVisitor(StringBuilder output, DataSourceMapping mapping){
+		super(output);
 		this.mapping = mapping;
 	}
 
@@ -22,8 +21,17 @@ public class MySqlPrintVisitor extends MySqlOutputVisitor {
     public final boolean visit(final SQLExprTableSource x) {
 		String actualName = mapping.getActualName(ShardUtil.getExactlyValue(x.toString()));
 		if(actualName!=null){
-			((SQLIdentifierExpr)x.getExpr()).setName(actualName);
+			 print(actualName);
 		}
+		if (x.getAlias() != null) {
+            print(' ');
+            print(x.getAlias());
+        }
+
+        for (int i = 0; i < x.getHintsSize(); ++i) {
+            print(' ');
+            x.getHints().get(i).accept(this);
+        }
 		return false;
     }
 }

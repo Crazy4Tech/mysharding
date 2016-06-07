@@ -51,15 +51,16 @@ public class ShardResultSet extends ResultsetWrapper {
 				copyDelegates.add(each);
 				setCurrentResultSet(each);
 			}
-			
 		}
+		initial = true;
+		orderByResultSet();
 		return skipOffset();
 	}
 	
 	private boolean skipOffset() throws SQLException{
 		if(context.getLimit()!=null)
 		{
-			for(int i=0; i<context.getLimit().getOffset(); i++)
+			for(int i=1; i<context.getLimit().getOffset(); i++)
 			{
 				if(nextForSharding()==false) return false;
 			}
@@ -68,27 +69,38 @@ public class ShardResultSet extends ResultsetWrapper {
 	}
 	
 	private boolean nextForSharding() throws SQLException{
+		if(!currentResultSet.next())
+		{
+			copyDelegates.remove(currentResultSet);
+			if(!copyDelegates.isEmpty())currentResultSet = copyDelegates.get(0);
+		}
+		orderByResultSet();
+		return !copyDelegates.isEmpty();
+	}
+	
+	/**
+	 * 排序
+	 * @return
+	 * @throws SQLException
+	 */
+	private void orderByResultSet() throws SQLException{
 		if(!context.getOrderbys().isEmpty())
 		{
 			OrderbyValue currentValue = null;
 			for(ResultSet resultset : copyDelegates)
 			{
-				
-					OrderbyValue otherValue = ShardUtil.getOrderValue(context.getOrderbys(), resultset);
-					if(currentValue==null){
-						currentValue = otherValue;
-						currentResultSet = resultset;
-					}else{
-						if(currentValue.compareTo(otherValue)>0) currentResultSet = resultset;
-					}
-				
+				OrderbyValue otherValue = ShardUtil.getOrderValue(context.getOrderbys(), resultset);
+				if(currentValue==null)
+				{
+					currentValue = otherValue;
+					currentResultSet = resultset;
+				}
+				else
+				{
+					if(currentValue.compareTo(otherValue)>0) currentResultSet = resultset;
+				}
 			}
 		}
-		else
-		{
-			//if(!currentResultSet.)
-		}
-		return !copyDelegates.isEmpty();
 	}
 
 	@Override

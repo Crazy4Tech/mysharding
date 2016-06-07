@@ -40,7 +40,7 @@ public class SelectTest  extends TestCase{
 	
 	
 	public void testOrderBy() throws Exception{
-		String sql = "SELECT * FROM t_order o WHERE o.user_id=? AND o.order_id between 1 and 100 order by order_id";
+		String sql = "SELECT * FROM t_order o WHERE o.user_id=? AND o.order_id between 1 and 100";
 		
 		try( Connection connection = datasource.getConnection();
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);){

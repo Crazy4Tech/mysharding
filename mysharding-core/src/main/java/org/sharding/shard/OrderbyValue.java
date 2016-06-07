@@ -32,8 +32,18 @@ public class OrderbyValue implements Comparable<OrderbyValue>{
 		return 0;
 	}
 	
+	@Override
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		for(String filed : values.keySet())
+		{
+			buffer.append(values.get(filed).toString());
+		}
+		return buffer.toString();
+	}
 	
-	static class Value implements Comparable<Value>{
+	
+	public static class Value implements Comparable<Value>{
 		private String orderFiled;
 		private OrderByType orderType;
 		private Object value;
@@ -59,18 +69,26 @@ public class OrderbyValue implements Comparable<OrderbyValue>{
 				if(this.value instanceof String)
 					return ((String)this.value).compareTo((String)other.getValue());
 				else if(this.value instanceof Number)
-					return ((Number) this.value).doubleValue() > ((Number)other.getValue()).doubleValue() ? 1 : -1;
+					return ((Number) this.value).doubleValue() < ((Number)other.getValue()).doubleValue() ? 1 : -1;
 				else if(this.value instanceof java.util.Date)
 					return ((java.util.Date)this.value).compareTo((java.util.Date)other.getValue());
 			}else{
 				if(this.value instanceof String)
 					return ((String)other.getValue()).compareTo((String)this.value);
 				else if(this.value instanceof Number)
-					return ((Number)other.getValue()).doubleValue() > ((Number)this.value).doubleValue() ? 1 : -1;
+					return ((Number) this.value).doubleValue() > ((Number)other.getValue()).doubleValue() ? 1 : -1;
 				else if(this.value instanceof java.util.Date)
 					return ((java.util.Date)other.getValue()).compareTo((java.util.Date)this.value);
 			}
-			return 0;
+			return 1;
+		}
+		
+		@Override
+		public String toString() {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append(orderFiled).append("=").append(value).append(" ").append(orderType);
+			return buffer.toString();
 		}
 	}
+
 }

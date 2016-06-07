@@ -13,8 +13,6 @@ import org.sharding.shard.ShardTable;
 import org.sharding.shard.Table;
 import org.sharding.shard.TableStrategy;
 
-import com.alibaba.druid.sql.ast.SQLStatement;
-
 /**
  * 
  * @author wenlong.liu
@@ -111,10 +109,10 @@ public class DataSourceRouter {
 		namenodeFactor.addLogicTables(tableFactor);
 	}
 	
+	
 	private String genSQL(DataSourceMapping sourceMapping){
-		MySqlPrintVisitor visitor = new MySqlPrintVisitor(sourceMapping);
-		SQLStatement stat = routeContext.getSQLStatement();
-		stat.accept(visitor);
-		return routeContext.getSQLStatement().toString();
+		StringBuilder sqlBuilder = new StringBuilder();
+		routeContext.getSQLStatement().accept(new MySqlPrintVisitor(sqlBuilder, sourceMapping));
+		return sqlBuilder.toString();
 	}
 }
