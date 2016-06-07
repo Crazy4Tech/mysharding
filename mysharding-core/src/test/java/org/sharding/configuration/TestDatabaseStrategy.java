@@ -15,7 +15,7 @@ public class TestDatabaseStrategy implements DatabaseStrategy {
 		{
 			for(Condition condition : shardValues)
 			{
-				for(Object value : condition.getValues())
+				for(Object value : condition.getShardingValues())
 				{
 					if (each.endsWith((Integer)value % 2 + "")) {
 						targetDataSources.add(each);

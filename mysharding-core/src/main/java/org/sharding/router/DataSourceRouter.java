@@ -3,6 +3,7 @@ package org.sharding.router;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.sharding.configuration.Configuration;
@@ -11,6 +12,8 @@ import org.sharding.shard.DatabaseStrategy;
 import org.sharding.shard.ShardTable;
 import org.sharding.shard.Table;
 import org.sharding.shard.TableStrategy;
+
+import com.alibaba.druid.sql.ast.SQLStatement;
 
 /**
  * 
@@ -61,8 +64,7 @@ public class DataSourceRouter {
 	
 	
 	private Collection<ActualTableAllOnDataSource>  routeDatasource(){
-		Collection<Table> tables = routeContext.getTables();
-		for(Table table : tables)
+		for(Table table : routeContext.getTables())
 		{
 			ShardTable shardTable = configuration.getTable(table.getName());
 			if(shardTable.isShardingDatabase())
@@ -87,7 +89,7 @@ public class DataSourceRouter {
 			{
 				TableStrategy tableStrategy = shardTable.getTableStrategy();
 				Collection<String> actualTables = shardTable.getActualTablesOnNamenode(namenode);
-				Collection<String> tablesOnNamenode = tableStrategy.doSharding(actualTables, routeContext.getTableShardingConditions(shardTable));
+				List<String> tablesOnNamenode = tableStrategy.doSharding(actualTables, routeContext.getTableShardingConditions(shardTable));
 				this.put(namenode, shardTable.getName(), tablesOnNamenode);
 			}
 			else
@@ -98,7 +100,7 @@ public class DataSourceRouter {
 	}
 	
 	
-	private void put(String namenode, String logicTable, Collection<String> tablesOnNamenode)
+	private void put(String namenode, String logicTable, List<String> tablesOnNamenode)
 	{
 		ActualTableAllOnDataSource namenodeFactor = namenodeMap.get(namenode);
 		if(namenodeFactor==null){
@@ -111,7 +113,8 @@ public class DataSourceRouter {
 	
 	private String genSQL(DataSourceMapping sourceMapping){
 		MySqlPrintVisitor visitor = new MySqlPrintVisitor(sourceMapping);
-		routeContext.getSQLStatement().accept(visitor);
+		SQLStatement stat = routeContext.getSQLStatement();
+		stat.accept(visitor);
 		return routeContext.getSQLStatement().toString();
 	}
 }

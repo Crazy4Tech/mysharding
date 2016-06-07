@@ -1,6 +1,5 @@
 package org.sharding.parser.mysql;
 
-import org.sharding.shard.Column;
 import org.sharding.shard.GroupBy;
 import org.sharding.shard.Limit;
 import org.sharding.shard.OrderBy;
@@ -10,15 +9,11 @@ import org.sharding.shard.Parameter;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
 import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
-import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNumberExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
-import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
 import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;

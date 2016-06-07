@@ -1,6 +1,7 @@
 package org.sharding.shard;
 
 import java.util.Collection;
+import java.util.List;
 /**
  * 
  * @author wenlongLiu
@@ -8,5 +9,5 @@ import java.util.Collection;
  */
 public interface TableStrategy{
 
-	Collection<String> doSharding(Collection<String> tables,Collection<Condition> parameters);
+	List<String> doSharding(Collection<String> tables,Collection<Condition> parameters);
 }

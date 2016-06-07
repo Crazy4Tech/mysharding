@@ -5,10 +5,12 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.sharding.executor.MergeContext;
-import org.sharding.shard.OrderBy;
+import org.sharding.shard.OrderbyValue;
+import org.sharding.shard.ShardUtil;
 
 /**
  * 
@@ -18,44 +20,83 @@ import org.sharding.shard.OrderBy;
 public class ShardResultSet extends ResultsetWrapper {
 
 	private final List<ResultSet> delegates;
+	private final List<ResultSet> copyDelegates;
 	private final MergeContext context;
-
+	private boolean initial = false;
+	
 	public ShardResultSet(List<ResultSet> delegates, MergeContext context){
 		this.delegates = delegates;
 		this.context = context;
+		this.copyDelegates= new ArrayList<ResultSet>(delegates.size());
 	}
 	
-	private void skipOffset(){
+	
+	@Override
+	public boolean next() throws SQLException {
+		if(!initial)
+		{
+			return initialNext();
+		}
+		else
+		{
+			return nextForSharding();
+		}
+	}
+	
+	private boolean initialNext() throws SQLException {
+		for(ResultSet each : delegates)
+		{
+			if(each.next()) 
+			{
+				copyDelegates.add(each);
+				setCurrentResultSet(each);
+			}
+			
+		}
+		return skipOffset();
+	}
+	
+	private boolean skipOffset() throws SQLException{
 		if(context.getLimit()!=null)
 		{
 			for(int i=0; i<context.getLimit().getOffset(); i++)
 			{
+				if(nextForSharding()==false) return false;
+			}
+		}
+		return true;
+	}
+	
+	private boolean nextForSharding() throws SQLException{
+		if(!context.getOrderbys().isEmpty())
+		{
+			OrderbyValue currentValue = null;
+			for(ResultSet resultset : copyDelegates)
+			{
+				
+					OrderbyValue otherValue = ShardUtil.getOrderValue(context.getOrderbys(), resultset);
+					if(currentValue==null){
+						currentValue = otherValue;
+						currentResultSet = resultset;
+					}else{
+						if(currentValue.compareTo(otherValue)>0) currentResultSet = resultset;
+					}
 				
 			}
 		}
-	}
-	
-	private void orderby(){
-		
-//		for(ResultSet resultset : delegates)
-//		{
-//			for(OrderBy order : context.getOrderbys())
-//			{
-//				order.getName() 
-//			}
-//		}
-	}
-	
-	@Override
-	public boolean next() throws SQLException {
-		// TODO Auto-generated method stub
-		return false;
+		else
+		{
+			//if(!currentResultSet.)
+		}
+		return !copyDelegates.isEmpty();
 	}
 
 	@Override
 	public void close() throws SQLException {
-		// TODO Auto-generated method stub
-		
+		for(ResultSet resultset : delegates)
+		{
+			resultset.close();
+		}
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 import org.apache.log4j.Logger;
 import org.sharding.executor.ExecuteCallback.PreparedStatementCallback;
 import org.sharding.executor.ExecuteCallback.StatmentCallback;
+import org.sharding.jdbc.ShardResultSet;
 import org.sharding.router.RouteUnit;
 import org.sharding.router.Router;
 
@@ -23,13 +24,13 @@ import org.sharding.router.Router;
  */
 public class StatementExecutor implements Executor {
 	
-	static Logger logger = Logger.getLogger(StatementExecutor.class);
+	private final static Logger logger = Logger.getLogger(StatementExecutor.class);
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T execute(final ExecuteContext context, final StatmentCallback<T> callback) throws SQLException {
 		final ExecuteHandler handler = new ExecuteHandler(context);
-		final Collection<RouteUnit> targets = Router.router(context);
+		final Collection<RouteUnit> targets = Router.route(context);
 		Collection<Future<Object>> futures = new ArrayList<Future<Object>>(targets.size());
 		ExecutorService threadPool = context.getThreadPoolExecutor();
 		for(final RouteUnit  target : targets)
@@ -43,7 +44,7 @@ public class StatementExecutor implements Executor {
 			}});
 			futures.add(future);
 		}
-		return (T) mergeResult(futures);
+		return (T) mergeResult(futures, context.getMergeContext());
 	}
 
 	/**
@@ -54,13 +55,12 @@ public class StatementExecutor implements Executor {
 	@SuppressWarnings("unchecked")
 	public <T> T execute(ExecuteContext context, final PreparedStatementCallback<T> callback) throws SQLException {
 		final ExecuteHandler handler = new ExecuteHandler(context);
-		final Collection<RouteUnit> targets = Router.router(context);
+		final Collection<RouteUnit> targets = Router.route(context);
 		Collection<Future<Object>> futures = new ArrayList<Future<Object>>(targets.size());
 		ExecutorService threadPool = context.getThreadPoolExecutor();
 		for(final RouteUnit  target : targets)
 		{
 			logger.debug(target.toString());
-			System.out.println(target.toString());
 			@SuppressWarnings("rawtypes")
 			Future<Object> future = threadPool.submit(new Callable(){
 				@Override
@@ -69,7 +69,7 @@ public class StatementExecutor implements Executor {
 			}});
 			futures.add(future);
 		}
-		return (T) mergeResult(futures);
+		return (T) mergeResult(futures, context.getMergeContext());
 	}
 
 	/**
@@ -77,27 +77,27 @@ public class StatementExecutor implements Executor {
 	 * @param futures
 	 * @return
 	 */
-	private Object mergeResult (Collection<Future<Object>> futures) throws SQLException
+	private Object mergeResult (Collection<Future<Object>> futures, MergeContext mergeContext) throws SQLException
 	{
 		try{
-			List<Object> results = new ArrayList<Object>();
+			List<Object> results = new ArrayList<Object>(futures.size());
 			for(Future<Object> future : futures)
 			{
 				results.add(future.get());
 			}
 			
-			Object firstResult = results.get(0);
-			if(results.size()==0)
-				return firstResult;
+			if(results.isEmpty()){
+				throw new SQLException("");
+			}
 			
+			Object firstResult = results.get(0);
 			if(firstResult instanceof Boolean)
 				return mergeBooleanResult(results);
 			else if(firstResult instanceof Integer)
 				return mergeIntegerResult(results);
 			else	
-				return mergeResultSet(results);
+				return mergeResultSet(results, mergeContext);
 		}catch(Exception ex){
-			logger.error(ex);
 			throw new SQLException(ex);
 		}
 	}
@@ -124,11 +124,10 @@ public class StatementExecutor implements Executor {
 	}
 	
 	
-	private ResultSet mergeResultSet(List<Object> results)
+	@SuppressWarnings("unchecked")
+	private ResultSet mergeResultSet(List<?> results, MergeContext mergeContext)
 	{
-		if(results.size()==1) 
-			return  (ResultSet) results.get(0);
-		ResultSet result = null;
+		ShardResultSet result = new ShardResultSet((List<ResultSet>)results, mergeContext);
 		return result;
 	}
 }

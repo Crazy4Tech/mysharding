@@ -11,7 +11,7 @@ import org.sharding.shard.Parameter;
 
 /**
  * 
- * @author wenlongliu
+ * @author wenlong.liu
  *
  */
 public class ExecuteContext {
@@ -23,6 +23,8 @@ public class ExecuteContext {
 	private  Collection<ParameterCallback> parameterCallbacks;
 	
 	private  Collection<PrepareCallback> prepareCallbacks;
+	
+	private  MergeContext mergeContext;
 	
 	public ExecuteContext(ShardStatement statement){
 		this.statement = statement;
@@ -59,6 +61,14 @@ public class ExecuteContext {
 	
 	public ShardStatement getStatement(){
 		return this.statement;
+	}
+	
+	public MergeContext getMergeContext() {
+		return mergeContext;
+	}
+
+	public void setMergeContext(MergeContext mergeContext) {
+		this.mergeContext = mergeContext;
 	}
 	
 	public Configuration getConfiguration() {

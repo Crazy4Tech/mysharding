@@ -14,8 +14,9 @@ import org.sharding.parser.SQLParser;
 public class Router {
 
 	
-	public static Collection<RouteUnit> router(ExecuteContext context){
+	public static Collection<RouteUnit> route(ExecuteContext context){
 		ParseResult parseResult = SQLParser.parse(context);
+		context.setMergeContext(parseResult.getMergeContext());
 		DataSourceRouter router = new DataSourceRouter(parseResult.getRouteContext(), context.getConfiguration());
 		return router.route();
 	}

@@ -15,8 +15,9 @@ import org.sharding.shard.Table;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBetweenExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLInListExpr;
+import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
+import com.alibaba.druid.sql.ast.expr.SQLTextLiteralExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlSchemaStatVisitor;
 import com.alibaba.druid.stat.TableStat.Column;
@@ -122,9 +123,12 @@ public abstract class AbstractVisitor extends MySqlSchemaStatVisitor implements 
 	        org.sharding.shard.Condition shardCondition = new org.sharding.shard.Condition();
 	    	shardCondition.setColumn(shardingColumn);
 	    	shardCondition.setOperator(operator);
-	    	for(SQLExpr value : valueExprs){
-	    		if(value instanceof SQLCharExpr){
-	    			shardCondition.addValue(((SQLCharExpr)value).getText());
+	    	for(SQLExpr value : valueExprs)
+	    	{
+	    		if(SQLTextLiteralExpr.class.isAssignableFrom(value.getClass())){
+	    			shardCondition.addValue(((SQLTextLiteralExpr)value).getText());
+	    		}else if(SQLNumericLiteralExpr.class.isAssignableFrom(value.getClass())){
+	    			shardCondition.addValue(((SQLNumericLiteralExpr)value).getNumber());
 	    		}else if(value instanceof SQLVariantRefExpr){
 	    			int index = ((SQLVariantRefExpr)value).getIndex();
 	    			shardCondition.addValue(this.getParseContext().getParameters().get(index).getValue());

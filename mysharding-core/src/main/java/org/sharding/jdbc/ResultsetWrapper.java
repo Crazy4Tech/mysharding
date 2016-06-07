@@ -27,7 +27,11 @@ import java.util.Map;
 public abstract class ResultsetWrapper implements ResultSet{
 	
 	protected ResultSet currentResultSet;
-
+	
+	
+	protected void setCurrentResultSet(ResultSet resultSet){
+		this.currentResultSet = resultSet;
+	}
 
 	@Override
 	public String getString(int columnIndex) throws SQLException {

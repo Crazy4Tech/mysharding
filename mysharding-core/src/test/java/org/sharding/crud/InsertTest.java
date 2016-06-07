@@ -2,6 +2,7 @@ package org.sharding.crud;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.Random;
 
 import org.sharding.jdbc.DataSourceFactory;
 import org.sharding.jdbc.ShardDataSource;
@@ -18,10 +19,11 @@ public class InsertTest  extends TestCase{
 	}
 
 	public void test() throws Exception{
+		Random random = new Random();
 		String orderSql = "INSERT INTO `t_order` (`order_id`, `user_id`, `status`) VALUES (?, ?, ?)";
         String orderItemSql = "INSERT INTO `t_order_item` (`order_item_id`, `order_id`, `user_id`, `status`) VALUES (?, ?, ?, ?)";
-        for (int orderId = 1; orderId <= 4; orderId++) {
-            for (int userId = 1; userId <= 2; userId++) {
+        for (int orderId = 1; orderId <= 100; orderId++) {
+        		int userId = random.nextInt(2)+1;
                 try (Connection connection = datasource.getConnection()) {
                     PreparedStatement preparedStatement = connection.prepareStatement(orderSql);
                     preparedStatement.setInt(1, orderId);
@@ -38,12 +40,11 @@ public class InsertTest  extends TestCase{
                     preparedStatement.setString(4, "insert");
                     preparedStatement.execute();
                     preparedStatement.close();
-                // CHECKSTYLE:OFF
+
                 } catch (final Exception ex) {
-                // CHECKSTYLE:ON
                     ex.printStackTrace();
                 }
-            }
+            
         }
 	}
 }

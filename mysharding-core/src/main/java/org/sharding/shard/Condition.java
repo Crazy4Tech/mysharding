@@ -36,6 +36,21 @@ public class Condition {
 	public List<Object> getValues() {
 		return values;
 	}
+	
+	public List<Object> getShardingValues() {
+		if(BinaryOperator.BETWEEN==operator)
+		{
+			int begin = (int) values.get(0);
+			int end = (int) values.get(1);
+			List<Object> newValues = new ArrayList<Object>(end-begin+1);
+			for(int i=begin; i<=end; i++)
+			{
+				newValues.add(i);
+			}
+			return newValues;
+		}
+		return values;
+	}
 
 	public void addValue(Object value) {
 		this.values.add(value);

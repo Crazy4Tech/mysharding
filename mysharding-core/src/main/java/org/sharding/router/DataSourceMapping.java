@@ -18,6 +18,11 @@ public class DataSourceMapping {
 		this.namenode = namenode;
 		this.tableMappings = new ArrayList<TableMapping>();
 	}
+	
+	public DataSourceMapping(String namenode, Collection<TableMapping> tableMappings){
+		this.namenode = namenode;
+		this.tableMappings = tableMappings;
+	}
 
 	public String getNamenode() {
 		return namenode;
@@ -30,6 +35,7 @@ public class DataSourceMapping {
 	public void addTableMapping(TableMapping mapping) {
 		 tableMappings.add(mapping);
 	}
+
 	
 	public String getActualName(String logic){
 		for(TableMapping mapping : tableMappings){

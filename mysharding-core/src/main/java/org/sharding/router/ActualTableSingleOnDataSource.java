@@ -14,9 +14,9 @@ public class ActualTableSingleOnDataSource {
 
 	private final String logicName;
 	  
-	private final Collection<String> actualTables;
+	private final List<String> actualTables;
 	
-	public ActualTableSingleOnDataSource(String logicTable, String namenode, Collection<String> actualTables){
+	public ActualTableSingleOnDataSource(String logicTable, String namenode, List<String> actualTables){
 		this.logicName = logicTable;
 		this.namenode = namenode;
 		this.actualTables = actualTables;
@@ -30,13 +30,10 @@ public class ActualTableSingleOnDataSource {
 		return namenode;
 	}
 
-	public Collection<String> getActualTables() {
+	public List<String> getActualTables() {
 		return actualTables;
 	}
 	
-	public List<String> getListActualTables() {
-		return (List<String>)actualTables;
-	}
 
 	public void addActualTable(Collection<String> actualTables) {
 		this.actualTables.addAll(actualTables);

@@ -2,64 +2,71 @@ package org.sharding.router;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 
- * @author pc
+ * @author wenlongliu
  *
  */
 public class BindingTableRouter {
 	
 	private ActualTableAllOnDataSource dataSource;
 	
-	private final Collection<DataSourceMapping> dataSourceMappings;
+	
 	
 	public BindingTableRouter(ActualTableAllOnDataSource dataSource){
 		this.dataSource = dataSource;
-		this.dataSourceMappings = new ArrayList<DataSourceMapping>();
 	}
 
 	public Collection<DataSourceMapping> route(){
-		int[] counter = new int[dataSource.getLogicTables().size()];
-		Integer countIndex = counter.length - 1;
-		int rows = dataSource.getLogicTables().isEmpty() ? 0 : 1;
-		for(ActualTableSingleOnDataSource logicTable : dataSource.getLogicTables())
+		List<List<TableMapping>> results = decartes(dataSource.getLogicTables());
+		List<DataSourceMapping> dataSourceMappings  = new ArrayList<DataSourceMapping>(results.size());
+		for(List<TableMapping> tableMappings : results)
 		{
-			rows = rows * logicTable.getActualTables().size();
-		}
-		
-		for(int i=0; i<rows; i++)
-		{
-			bingEveryTable(counter, countIndex);
+			dataSourceMappings.add(new DataSourceMapping(dataSource.getNamenode(), tableMappings));
 		}
 		return dataSourceMappings;
 	}
 	
-	private void bingEveryTable(int[] counter, Integer counterIndex)
-	{
-		DataSourceMapping dataSourceMapping = new DataSourceMapping(dataSource.getNamenode());
-		dataSourceMappings.add(dataSourceMapping);
-		for(int index=0; index<dataSource.getLogicTables().size(); index++)
-		{
-			String logicTable = dataSource.getLogicTables().get(index).getLogicName();
-			String actualName = dataSource.getLogicTables().get(index).getListActualTables().get(counter[index]);
-			TableMapping tableMapping = new TableMapping(logicTable, actualName);
-			dataSourceMapping.addTableMapping(tableMapping);
-		}
-		moveIndx(counter, counterIndex);
-	}
+
 	
-	private void moveIndx(int[] counter, Integer counterIndex)
-	{
-		 counter[counterIndex]++;  
-         if (counter[counterIndex] >= dataSource.getLogicTables().get(counterIndex).getListActualTables().size()) {  
-             counter[counterIndex] = 0;  
-             counterIndex--;  
-             if (counterIndex >= 0) {  
-            	 moveIndx(counter, counterIndex);  
-             }  
-             counterIndex = dataSource.getLogicTables().size() - 1;  
-         }  
-	}
+    public static List<List<TableMapping>> decartes(List<ActualTableSingleOnDataSource> dataSources) {
+        int rows = dataSources.size() > 0 ? 1 : 0;
+        for (ActualTableSingleOnDataSource data : dataSources) {
+            rows *= data.getActualTables().size();
+        }
+        // 笛卡尔积索引记录
+        int[] record = new int[dataSources.size()];
+        List<List<TableMapping>> results = new ArrayList<List<TableMapping>>();
+        for (int i = 0; i < rows; i++)
+        {
+            List<TableMapping> row = new ArrayList<TableMapping>();
+            for (int index = 0; index < record.length; index++) 
+            {
+                String logicTable = dataSources.get(index).getLogicName();
+    			String actualName = dataSources.get(index).getActualTables().get(record[index]);
+    			TableMapping tableMapping = new TableMapping(logicTable, actualName);
+    			row.add(tableMapping);
+            }
+            results.add(row);
+            crossRecord(dataSources, record, dataSources.size() - 1);
+        }
+        return results;
+    }
+
+    /**
+     * @param sourceArgs
+     * @param record
+     * @param level
+     */
+    private static void crossRecord(List<ActualTableSingleOnDataSource> dataSources, int[] record, int level) {
+        record[level] = record[level] + 1;
+        if (record[level] >= dataSources.get(level).getActualTables().size() && level > 0) 
+        {
+            record[level] = 0;
+            crossRecord(dataSources, record, level - 1);
+        }
+    }
 	
 }
