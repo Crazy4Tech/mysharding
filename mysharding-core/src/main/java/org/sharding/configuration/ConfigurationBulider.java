@@ -10,6 +10,8 @@ import java.util.concurrent.Executors;
 import javax.sql.DataSource;
 
 import org.sharding.exception.DuplicatedNameException;
+import org.sharding.router.loadbalance.AccessMode;
+import org.sharding.router.loadbalance.LoanBalanceMode;
 import org.sharding.shard.DatabaseStrategy;
 import org.sharding.shard.ShardDatanode;
 import org.sharding.shard.ShardNamenode;
@@ -99,7 +101,12 @@ public class ConfigurationBulider extends  AbstractBulider{
 		{
 			String name = node.getAttributes().getNamedItem("name").getNodeValue();
 			String loadbalance = node.getAttributes().getNamedItem("loadbalance").getNodeValue();
-			ShardNamenode namenode = new ShardNamenode(name, loadbalance);
+			LoanBalanceMode balanceMode = LoanBalanceMode.RANDOM;
+			try{
+				balanceMode = LoanBalanceMode.valueOf(loadbalance.toUpperCase());
+			}catch(Exception ex){
+			}
+			ShardNamenode namenode = new ShardNamenode(name, balanceMode);
 			if(configuration.getNamenode(name)!=null)
 				throw new DuplicatedNameException("parser namenode Duplicated Name");
 			configuration.addNamenode(namenode);
@@ -114,14 +121,24 @@ public class ConfigurationBulider extends  AbstractBulider{
 			Node datanode = childList.item(i);
 			if(datanode.getNodeType()==Node.ELEMENT_NODE)
 			{
-				String name = datanode.getAttributes().getNamedItem("name").getNodeValue();
-				String accessMode = datanode.getAttributes().getNamedItem("accessMode").getNodeValue();
-				String weight = datanode.getAttributes().getNamedItem("weight").getNodeValue();
+				String name = namenodeConfig.getName() +"_"+ datanode.getAttributes().getNamedItem("name").getNodeValue();
+				String access = datanode.getAttributes().getNamedItem("accessMode").getNodeValue();
+				String weightStr = datanode.getAttributes().getNamedItem("weight").getNodeValue();
+				AccessMode accessMode = AccessMode.READWRITE;
+				int weight = 0;
+				try{
+					accessMode = AccessMode.valueOf(access.toUpperCase().replaceAll("-", ""));
+				}catch(Exception ex){
+				}
+				try{
+					weight = Integer.valueOf(weightStr);
+				}catch(Exception ex){
+				}
 				ShardDatanode datenodeConfig = new ShardDatanode();
 				configuration.addDatanode(datenodeConfig);
 				datenodeConfig.setName(name);
 				datenodeConfig.setAccessMode(accessMode);
-				datenodeConfig.setWeight(Integer.valueOf(weight));
+				datenodeConfig.setWeight(weight);
 				namenodeConfig.addDatanode(datenodeConfig);
 				parserDatanodeAttributes(datenodeConfig, datanode);
 				

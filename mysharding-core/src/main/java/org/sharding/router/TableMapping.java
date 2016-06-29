@@ -8,6 +8,7 @@ package org.sharding.router;
 public class TableMapping {
 
 	private final String logicName;
+	
 	private final String actualName;
 	
 	TableMapping(String logicName, String actualName){

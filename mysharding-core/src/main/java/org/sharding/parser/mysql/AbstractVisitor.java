@@ -29,7 +29,7 @@ import com.alibaba.druid.stat.TableStat.Column;
  */
 public abstract class AbstractVisitor extends MySqlSchemaStatVisitor implements SQLVisitor {
 
-	protected  ParseResult result = new ParseResult();
+	protected  ParseResult parseResult = new ParseResult();
 	
 	protected  ParseContext context;
 	
@@ -40,13 +40,13 @@ public abstract class AbstractVisitor extends MySqlSchemaStatVisitor implements 
 	
 	@Override
 	public ParseResult getParseResult(){
-		return this.result;
+		return this.parseResult;
 	}
 	
 	@Override
 	public void setParseContext(ParseContext context) {
 		this.context = context;
-		this.result.setSQLStatement(context.getSQLStatement());
+		this.parseResult.setSQLStatement(context.getSQLStatement());
 	}
 
 	@Override

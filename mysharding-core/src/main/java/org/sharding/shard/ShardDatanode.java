@@ -2,6 +2,8 @@ package org.sharding.shard;
 
 import java.lang.reflect.Method;
 
+import org.sharding.router.loadbalance.AccessMode;
+
 /**
  * 
  * @author wenlong.liu
@@ -14,7 +16,7 @@ public class ShardDatanode{
 	private String  username;
 	private String  password;
 	private String  driverClassName;
-	private String  accessMode;
+	private AccessMode accessMode;
 	private Integer weight;
 	private Integer initialSize;
 	private Integer maxActive;
@@ -83,10 +85,10 @@ public class ShardDatanode{
 	public void setMinIdle(Integer minIdle) {
 		this.minIdle = minIdle;
 	}
-	public String getAccessMode() {
+	public AccessMode getAccessMode() {
 		return accessMode;
 	}
-	public void setAccessMode(String accessMode) {
+	public void setAccessMode(AccessMode accessMode) {
 		this.accessMode = accessMode;
 	}
 	public Integer getWeight() {

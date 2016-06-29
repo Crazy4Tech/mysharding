@@ -18,7 +18,7 @@ import org.sharding.shard.TableStrategy;
  * @author wenlong.liu
  *
  */
-public class DataSourceRouter {
+public class DataSourceRouter implements Router{
 	
 	private final RouteContext routeContext;
 	
@@ -33,6 +33,8 @@ public class DataSourceRouter {
 		this.namenodeMap= new HashMap<String, ActualTableAllOnDataSource>();
 	}
 	
+	
+	@Override
 	public Collection<RouteUnit> route()
 	{
 		Collection<ActualTableAllOnDataSource> dataSource = routeDatasource();
@@ -43,6 +45,7 @@ public class DataSourceRouter {
 			RouteUnit routeUnit = new RouteUnit();
 			routeUnit.setDataSource(sourceMapping.getNamenode());
 			routeUnit.setSql(genSQL(sourceMapping));
+			routeUnit.setStatementType(routeContext.getStatementType());
 			routeUnits.add(routeUnit);
 		}
 		return routeUnits;

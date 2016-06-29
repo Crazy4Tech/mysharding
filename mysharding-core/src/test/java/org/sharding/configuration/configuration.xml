@@ -17,15 +17,15 @@
 	</strategies>
 	
 	<namenodes>
-		<namenode name="ds_0" loadbalance="">
-			<datanode name="ds_0" accessMode="READ-WRITE" weight="10">
+		<namenode name="ds_0" loadbalance="POLL">
+			<datanode name="ds_01" accessMode="READ-WRITE" weight="10">
 				<url>
 				<![CDATA[jdbc:mysql://localhost:3306/ds_0]]>
 				</url> 
 			</datanode>
 		</namenode>
 		<namenode name="ds_1" loadbalance="">
-			<datanode name="ds_1" accessMode="READ-WRITE" weight="10">
+			<datanode name="ds_01" accessMode="READ-WRITE" weight="10">
 				<url>
 				<![CDATA[jdbc:mysql://localhost:3306/ds_1]]>
 				</url> 

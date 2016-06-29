@@ -15,7 +15,7 @@ import org.sharding.executor.ExecuteCallback.PreparedStatementCallback;
 import org.sharding.executor.ExecuteCallback.StatmentCallback;
 import org.sharding.jdbc.ShardResultSet;
 import org.sharding.router.RouteUnit;
-import org.sharding.router.Router;
+import org.sharding.router.RouterFactory;
 
 /**
  * 
@@ -30,7 +30,7 @@ public class StatementExecutor implements Executor {
 	@SuppressWarnings("unchecked")
 	public <T> T execute(final ExecuteContext context, final StatmentCallback<T> callback) throws SQLException {
 		final ExecuteHandler handler = new ExecuteHandler(context);
-		final Collection<RouteUnit> targets = Router.route(context);
+		final Collection<RouteUnit> targets = RouterFactory.createRouter(context).route();
 		Collection<Future<Object>> futures = new ArrayList<Future<Object>>(targets.size());
 		ExecutorService threadPool = context.getThreadPoolExecutor();
 		for(final RouteUnit  target : targets)
@@ -55,7 +55,7 @@ public class StatementExecutor implements Executor {
 	@SuppressWarnings("unchecked")
 	public <T> T execute(ExecuteContext context, final PreparedStatementCallback<T> callback) throws SQLException {
 		final ExecuteHandler handler = new ExecuteHandler(context);
-		final Collection<RouteUnit> targets = Router.route(context);
+		final Collection<RouteUnit> targets = RouterFactory.createRouter(context).route();
 		Collection<Future<Object>> futures = new ArrayList<Future<Object>>(targets.size());
 		ExecutorService threadPool = context.getThreadPoolExecutor();
 		for(final RouteUnit  target : targets)

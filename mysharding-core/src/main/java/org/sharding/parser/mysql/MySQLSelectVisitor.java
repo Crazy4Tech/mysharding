@@ -1,5 +1,6 @@
 package org.sharding.parser.mysql;
 
+import org.sharding.parser.StatementType;
 import org.sharding.shard.GroupBy;
 import org.sharding.shard.Limit;
 import org.sharding.shard.OrderBy;
@@ -26,6 +27,9 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 public class MySQLSelectVisitor extends AbstractVisitor  {
 
 
+	public MySQLSelectVisitor(){
+		parseResult.getRouteContext().setStatementType(StatementType.SELECT);
+	}
 	
 	@Override
     public final boolean visit(final SQLExprTableSource x) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.sharding.parser.StatementType;
 import org.sharding.shard.Condition;
 import org.sharding.shard.ShardTable;
 import org.sharding.shard.Table;
@@ -22,6 +23,8 @@ public class RouteContext {
 	private final Collection<Table> tables = new HashSet<Table>();
 	
 	private SQLStatement statement;
+	
+	private StatementType statementType;
 	
 	
 	public Collection<Condition> getShardConditions() {
@@ -46,6 +49,14 @@ public class RouteContext {
 	
 	public SQLStatement getSQLStatement() {
 		return statement;
+	}
+	
+	public StatementType getStatementType() {
+		return statementType;
+	}
+
+	public void setStatementType(StatementType statementType) {
+		this.statementType = statementType;
 	}
 	
 	public Collection<Condition> getDatabaseShardingConditions(ShardTable logicTable) {
@@ -77,4 +88,5 @@ public class RouteContext {
 		}
 		return conditions;
 	}
+
 }

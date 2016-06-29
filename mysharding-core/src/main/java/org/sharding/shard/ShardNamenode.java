@@ -2,6 +2,10 @@ package org.sharding.shard;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import org.sharding.router.loadbalance.AccessMode;
+import org.sharding.router.loadbalance.LoanBalanceMode;
 
 /**
  * 
@@ -11,10 +15,12 @@ import java.util.Collection;
 public class ShardNamenode
 {
 	private String name;
-	private String loadbalance;
+	
+	private LoanBalanceMode loadbalance;
+	
 	private Collection<ShardDatanode> datanodes = new ArrayList<ShardDatanode>();
 	
-	public ShardNamenode(String name, String loadbalance){
+	public ShardNamenode(String name, LoanBalanceMode loadbalance){
 		this.name = name;
 		this.loadbalance = loadbalance;
 	}
@@ -27,11 +33,11 @@ public class ShardNamenode
 		this.name = name;
 	}
 
-	public String getLoadbalance() {
+	public LoanBalanceMode getLoadbalance() {
 		return loadbalance;
 	}
 	
-	public void setLoadbalance(String loadbalance) {
+	public void setLoadbalance(LoanBalanceMode loadbalance) {
 		this.loadbalance = loadbalance;
 	}
 
@@ -46,6 +52,31 @@ public class ShardNamenode
 		this.datanodes.add(datanode);
 	}
 
+	public List<ShardDatanode> getReadDatanodes() {
+		List<ShardDatanode> readnodes = new ArrayList<ShardDatanode>(datanodes.size());
+		for(ShardDatanode datenode : datanodes)
+		{
+			if(datenode.getAccessMode()==AccessMode.READ  
+				|| datenode.getAccessMode()==AccessMode.READWRITE)
+			{
+				readnodes.add(datenode);
+			}
+		}
+		return readnodes;
+	}
+	
+	public List<ShardDatanode> getWriteDatanodes() {
+		List<ShardDatanode> writenodes = new ArrayList<ShardDatanode>(datanodes.size());
+		for(ShardDatanode datenode : datanodes)
+		{
+			if(datenode.getAccessMode()==AccessMode.WRITE  
+					|| datenode.getAccessMode()==AccessMode.READWRITE)
+				{
+					writenodes.add(datenode);
+				}
+		}
+		return writenodes;
+	}
 	
 	
 }
