@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -33,7 +34,7 @@ public abstract class AbstractStatement implements Statement {
 	protected int resultSetConcurrency =  ResultSet.CONCUR_READ_ONLY;
 	protected int resultSetHoldability = 0;
 	protected Collection<PrepareCallback> prepareCallbacks = new LinkedList<PrepareCallback>();
-	protected Collection<Statement> statements = new LinkedList<Statement>();
+	protected Collection<Statement> statements = new ArrayList<Statement>();
 
 	
 	protected AbstractStatement(ShardConnection connection){
@@ -113,9 +114,11 @@ public abstract class AbstractStatement implements Statement {
 	@Override
 	public void close() throws SQLException {
 		this.isClosed = true;
-		for(Statement each : getRouteStatements()){
+		Collection<Statement> statements = getRouteStatements();
+		for(Statement each : statements){
 			each.close();
 		}
+		getRouteStatements().clear();
 	}
 
 	@Override
@@ -322,5 +325,9 @@ public abstract class AbstractStatement implements Statement {
 	
 	public Collection<Statement> getRouteStatements() {
 		return this.statements;
+	}
+	
+	public synchronized void addRouteStatements(Statement statement) {
+		this.statements.add(statement);
 	}
 }

@@ -11,7 +11,7 @@ import org.sharding.jdbc.ShardPreparedStatement;
 
 /**
  * 
- * @author wenlongliu
+ * @author wenlong.liu
  *
  */
 public class ExecuteHandler {

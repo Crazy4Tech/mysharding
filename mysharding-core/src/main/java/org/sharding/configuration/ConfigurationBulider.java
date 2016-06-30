@@ -252,7 +252,6 @@ public class ConfigurationBulider extends  AbstractBulider{
 		dataSource.setDriverClassName(datenode.getDriverClassName());
 		dataSource.setMaxActive(datenode.getMaxActive());
 		dataSource.setMaxWait(datenode.getMaxWait());
-		//dataSource.setMaxIdle(maxIdle);
 		dataSource.setMinIdle(datenode.getMinIdle());
 		dataSource.setInitialSize(datenode.getInitialSize());
 		return dataSource;

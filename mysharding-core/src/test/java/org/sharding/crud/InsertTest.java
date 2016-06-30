@@ -17,8 +17,27 @@ public class InsertTest  extends TestCase{
 		String resource = "org/sharding/configuration/configuration.xml";
 		datasource = new DataSourceFactory(resource).openDataSource();
 	}
+	
+	public void testDelete() throws Exception{
+		String orderSql = "DELETE FROM t_order";
+        String orderItemSql = "DELETE FROM t_order_item";
+        
+        try (Connection connection = datasource.getConnection()) {
+        	PreparedStatement preparedStatement = connection.prepareStatement(orderSql);
+            preparedStatement.execute();
+            preparedStatement.close();
+        
+            preparedStatement = connection.prepareStatement(orderItemSql);
+            preparedStatement.execute();
+            preparedStatement.close();
 
-	public void test() throws Exception{
+        } catch (final Exception ex) {
+            ex.printStackTrace();
+        }
+	}
+
+	
+	public void testInsert() throws Exception{
 		Random random = new Random();
 		String orderSql = "INSERT INTO `t_order` (`order_id`, `user_id`, `status`) VALUES (?, ?, ?)";
         String orderItemSql = "INSERT INTO `t_order_item` (`order_item_id`, `order_id`, `user_id`, `status`) VALUES (?, ?, ?, ?)";
@@ -44,7 +63,6 @@ public class InsertTest  extends TestCase{
                 } catch (final Exception ex) {
                     ex.printStackTrace();
                 }
-            
         }
 	}
 }

@@ -1,34 +1,36 @@
 package org.sharding.jdbc;
 
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.SQLClientInfoException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.Struct;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.sharding.executor.ConnectionCallback;
 
 /**
  * 
- * @author wenlongliu
+ * @author wenlong.liu
  *
  */
-public abstract class AbstractConnection implements Connection {
+public abstract class AbstractConnection extends AbstractUnsupportedOperationConnection {
 	
+	private boolean autoCommit = true;
+    
+    private boolean readOnly = true;
+    
+    private boolean closed;
+    
+    private int transactionIsolation = TRANSACTION_READ_UNCOMMITTED;
+    
+	private final Collection<Connection> connections = new ArrayList<Connection>();
+	
+	private final Collection<ConnectionCallback> callbacks = new ArrayList<ConnectionCallback>(3);
 
 	@Override
-	public boolean isWrapperFor(Class<?> arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		return this.getClass().isAssignableFrom(iface);
 	}
 
 	@Override
@@ -41,270 +43,118 @@ public abstract class AbstractConnection implements Connection {
 		}
 	}
 
-
 	@Override
 	public void clearWarnings() throws SQLException {
-		// TODO Auto-generated method stub
-		
+		for(Connection conn : getRealConnections()){
+			conn.clearWarnings();
+		}
 	}
 
 	@Override
 	public void close() throws SQLException {
-		// TODO Auto-generated method stub
-		
+		this.closed = true;
+		for(Connection conn : getRealConnections()){
+			conn.close();
+		}
+		getRealConnections().clear();
 	}
 
+	
 	@Override
 	public void commit() throws SQLException {
-		// TODO Auto-generated method stub
-		
+		for(Connection conn : getRealConnections()){
+			conn.commit();
+		}
+	}
+	
+	@Override
+	public void rollback() throws SQLException {
+		for(Connection conn : getRealConnections()){
+			conn.rollback();
+		}
 	}
 
 	@Override
-	public Array createArrayOf(String arg0, Object[] arg1) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public void setAutoCommit(final boolean autoCommit) throws SQLException {
+		this.autoCommit = autoCommit;
+		callbacks.add(new ConnectionCallback(){
+			@Override
+			public void execute(Connection connection) throws SQLException {
+				connection.setAutoCommit(autoCommit);
+			}});
 	}
-
-	@Override
-	public Blob createBlob() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Clob createClob() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NClob createNClob() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SQLXML createSQLXML() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Struct createStruct(String arg0, Object[] arg1) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	@Override
 	public boolean getAutoCommit() throws SQLException {
-		// TODO Auto-generated method stub
-		return false;
+		return this.autoCommit;
 	}
 
-	@Override
-	public String getCatalog() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Properties getClientInfo() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getClientInfo(String arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getHoldability() throws SQLException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
+	
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
-
-
+	@Override
+	public void setTransactionIsolation(final int level) throws SQLException {
+		this.transactionIsolation = level;
+		callbacks.add(new ConnectionCallback(){
+			@Override
+			public void execute(Connection connection) throws SQLException {
+				connection.setTransactionIsolation(level);
+			}});
+	}
+	
 	@Override
 	public int getTransactionIsolation() throws SQLException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public Map<String, Class<?>> getTypeMap() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+		return this.transactionIsolation;
 	}
 
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean isClosed() throws SQLException {
-		// TODO Auto-generated method stub
-		return false;
+		return this.closed;
+	}
+	
+	@Override
+	public void setReadOnly(final boolean readOnly) throws SQLException {
+		this.readOnly = readOnly;
+		callbacks.add(new ConnectionCallback(){
+			@Override
+			public void execute(Connection connection) throws SQLException {
+				connection.setReadOnly(readOnly);
+			}});
 	}
 
 	@Override
 	public boolean isReadOnly() throws SQLException {
-		// TODO Auto-generated method stub
-		return false;
+		return this.readOnly;
 	}
 
 	@Override
-	public boolean isValid(int arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		return false;
+	public int getHoldability() throws SQLException {
+		 return ResultSet.CLOSE_CURSORS_AT_COMMIT;
 	}
-
+	
 	@Override
-	public String nativeSQL(String arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CallableStatement prepareCall(String arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CallableStatement prepareCall(String arg0, int arg1, int arg2) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CallableStatement prepareCall(String arg0, int arg1, int arg2, int arg3) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public void setHoldability(int arg0) throws SQLException {	
 	}
 
 	
-
-	@Override
-	public void releaseSavepoint(Savepoint arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
+	protected synchronized void  addRealConnection(Connection connection){
+		connections.add(connection);
 	}
 
-	@Override
-	public void rollback() throws SQLException {
-		// TODO Auto-generated method stub
-		
+	protected Collection<Connection> getRealConnections(){
+		return connections;
 	}
 
-	@Override
-	public void rollback(Savepoint arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
+	public Collection<ConnectionCallback> getCallbacks() {
+		return callbacks;
 	}
-
-	@Override
-	public void setAutoCommit(boolean arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setCatalog(String arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setClientInfo(Properties arg0) throws SQLClientInfoException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setClientInfo(String arg0, String arg1) throws SQLClientInfoException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setHoldability(int arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	@Override
-	public void setReadOnly(boolean arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Savepoint setSavepoint() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Savepoint setSavepoint(String arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public void setTransactionIsolation(int arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setTypeMap(Map<String, Class<?>> arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setSchema(String schema) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String getSchema() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void abort(Executor executor) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public int getNetworkTimeout() throws SQLException {
-		return 0;
-	}
-	
 	
 }

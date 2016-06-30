@@ -2,7 +2,7 @@ package org.sharding.parser.mysql;
 
 import org.sharding.parser.StatementType;
 
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlUpdateStatement;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
 /**
  * 
  * @author wenlong.liu
@@ -15,7 +15,7 @@ public class MySQLDeleteVisitor extends AbstractVisitor  {
 	}
 	
 	@Override
-	public boolean visit(final MySqlUpdateStatement x) {
+	public boolean visit(final MySqlDeleteStatement x) {
 		parseResultAddTable(x.getTableSource().toString(), x.getTableSource().getAlias());
         return super.visit(x);
     }

@@ -13,7 +13,7 @@ import java.util.concurrent.Future;
 import org.apache.log4j.Logger;
 import org.sharding.executor.ExecuteCallback.PreparedStatementCallback;
 import org.sharding.executor.ExecuteCallback.StatmentCallback;
-import org.sharding.jdbc.ShardResultSet;
+import org.sharding.jdbc.ShardGenericResultSet;
 import org.sharding.router.RouteUnit;
 import org.sharding.router.RouterFactory;
 
@@ -87,7 +87,7 @@ public class StatementExecutor implements Executor {
 			}
 			
 			if(results.isEmpty()){
-				throw new SQLException("");
+				throw new SQLException("RouteUnit is empty");
 			}
 			
 			Object firstResult = results.get(0);
@@ -127,7 +127,6 @@ public class StatementExecutor implements Executor {
 	@SuppressWarnings("unchecked")
 	private ResultSet mergeResultSet(List<?> results, MergeContext mergeContext)
 	{
-		ShardResultSet result = new ShardResultSet((List<ResultSet>)results, mergeContext);
-		return result;
+		return new ShardGenericResultSet((List<ResultSet>)results, mergeContext);
 	}
 }

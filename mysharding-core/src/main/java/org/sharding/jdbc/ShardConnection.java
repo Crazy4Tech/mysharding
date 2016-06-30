@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.LinkedList;
 
 import javax.sql.DataSource;
 
@@ -20,11 +18,9 @@ public class ShardConnection extends AbstractConnection {
 
 	private final ShardDataSource shardingDataSource;
 	
-	private final Collection<Connection> connections;
 	
 	public ShardConnection(ShardDataSource dataSource){
 		this.shardingDataSource = dataSource;
-		this.connections = new LinkedList<Connection>();
 	}
 	
 	@Override
@@ -82,7 +78,7 @@ public class ShardConnection extends AbstractConnection {
 	
 	public Connection getConnection(String key) throws SQLException{
 		Connection connection = getDataSource(key).getConnection();
-		connections.add(connection);
+		addRealConnection(connection);
 		return connection;
 	}
 }

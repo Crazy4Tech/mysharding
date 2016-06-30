@@ -17,7 +17,7 @@ import org.sharding.shard.ShardTable;
  */
 public class Configuration 
 {
-	//private final static  Configuration instance = new Configuration();
+	private final static  String GLOBAL_NAMENODE = "default";
 	
 	private final Map<String, Object> strategyMap = new HashMap<String, Object>();
 	
@@ -105,5 +105,9 @@ public class Configuration
 	
 	public void setThreadPoolExecutor(ExecutorService service){
 		 this.ThreadPool = service;
+	}
+	
+	public String getGlobalNamenode(){
+		return GLOBAL_NAMENODE;
 	}
 }

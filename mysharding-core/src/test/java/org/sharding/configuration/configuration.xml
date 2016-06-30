@@ -31,6 +31,13 @@
 				</url> 
 			</datanode>
 		</namenode>
+		<namenode name="default" loadbalance="">
+			<datanode name="test" accessMode="READ-WRITE" weight="10">
+				<url>
+				<![CDATA[jdbc:mysql://localhost:3306/test]]>
+				</url> 
+			</datanode>
+		</namenode>
 	</namenodes>
 	
 	<tables>

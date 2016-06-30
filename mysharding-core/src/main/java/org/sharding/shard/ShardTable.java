@@ -12,10 +12,18 @@ import java.util.Map;
  */
 public class ShardTable{
 
-	/**
-	 * 
+	//默认全局数据库的表-表不用分库分表
+	public final static String GLOBAL_MODE ="GLOBAL";
+	
+	//广播表是每个数据库都有这个表
+	public final static String BROADCAST_MODE ="BROADCAST";
+	
+	//广播表是每个数据库都有这个表
+	public final static String SHARDING_MODE ="SHARDING";
+	/**	 * 
 	 */
 	private String name;
+	private String accessmode = SHARDING_MODE;
 	private DatabaseStrategy databaseStrategy;
 	private String[] databaseStrategyColumns;
 	private TableStrategy tableStrategy;
@@ -30,7 +38,15 @@ public class ShardTable{
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public String getAccessmode() {
+		return accessmode;
+	}
 
+	public void setAccessmode(String accessmode) {
+		this.accessmode = accessmode;
+	}
+	
 	public DatabaseStrategy getDatabaseStrategy() {
 		return databaseStrategy;
 	}
@@ -100,6 +116,20 @@ public class ShardTable{
 		if(this.tableStrategy!=null && 
 				this.tableStrategyColumns!=null && 
 				this.tableStrategyColumns.length>0)
+			return true;
+		else
+			return false;
+	}
+	
+	public boolean isGlobalTable(){
+		if(this.accessmode!=null && this.accessmode.equalsIgnoreCase(GLOBAL_MODE))
+			return true;
+		else
+			return false;
+	}
+	
+	public boolean isBroadcastTable(){
+		if(this.accessmode!=null && this.accessmode.equalsIgnoreCase(BROADCAST_MODE))
 			return true;
 		else
 			return false;

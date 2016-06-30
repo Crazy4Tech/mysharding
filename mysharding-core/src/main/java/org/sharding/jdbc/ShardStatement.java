@@ -143,12 +143,8 @@ public class ShardStatement extends AbstractStatement{
 	}
 
 	public Statement createStatement(RouteUnit unit) throws SQLException{
-		Statement statement = null;
-		if(resultSetHoldability==0)
-			statement = getConnection(unit.getDataSource()).createStatement(resultSetType, resultSetConcurrency);
-		else
-			statement = getConnection(unit.getDataSource()).createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
-		statements.add(statement);
+		Statement statement = getConnection(unit.getDataSource()).createStatement(resultSetType, resultSetConcurrency);
+		addRouteStatements(statement);
 		return statement;
 	}
 }

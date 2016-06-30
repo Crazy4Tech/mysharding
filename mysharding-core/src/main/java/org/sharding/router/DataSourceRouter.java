@@ -1,6 +1,7 @@
 package org.sharding.router;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import org.sharding.configuration.Configuration;
 import org.sharding.parser.mysql.MySqlPrintVisitor;
+import org.sharding.shard.Condition;
 import org.sharding.shard.DatabaseStrategy;
 import org.sharding.shard.ShardTable;
 import org.sharding.shard.Table;
@@ -68,15 +70,31 @@ public class DataSourceRouter implements Router{
 		for(Table table : routeContext.getTables())
 		{
 			ShardTable shardTable = configuration.getTable(table.getName());
-			if(shardTable.isShardingDatabase())
+			if(shardTable==null || shardTable.isGlobalTable())
 			{
-				DatabaseStrategy databaseStrategy = shardTable.getDatabaseStrategy();
-				Collection<String> namenodes = databaseStrategy.doSharding(shardTable.getNamenodes(), routeContext.getDatabaseShardingConditions(shardTable));
+				//不配置的表默认是全局数据库中的表
+				shardTable = new ShardTable();
+				shardTable.setAccessmode(ShardTable.GLOBAL_MODE);
+				shardTable.setName(table.getName());
+				Collection<String> namenodes = Arrays.asList(new String[]{configuration.getGlobalNamenode()});
 				routeTable(namenodes, shardTable);
 			}
-			else
+			else if(shardTable.isShardingDatabase())
 			{
-				
+				DatabaseStrategy databaseStrategy = shardTable.getDatabaseStrategy();
+				Collection<Condition> shardValues = routeContext.getDatabaseShardingConditions(shardTable);
+				Collection<String> namenodes = databaseStrategy.doSharding(shardTable.getNamenodes(), shardValues);
+				if(namenodes==null || namenodes.isEmpty()) namenodes = shardTable.getNamenodes();
+				routeTable(namenodes, shardTable);
+			}
+			else if(shardTable.isBroadcastTable())
+			{
+				//广播表是每个数据库中都有这个表
+				shardTable = new ShardTable();
+				shardTable.setAccessmode(ShardTable.BROADCAST_MODE);
+				shardTable.setName(table.getName());
+				Collection<String> namenodes = Arrays.asList(new String[]{});
+				routeTable(namenodes, shardTable);
 			}
 		}
 		return namenodeMap.values();
@@ -90,12 +108,23 @@ public class DataSourceRouter implements Router{
 			{
 				TableStrategy tableStrategy = shardTable.getTableStrategy();
 				Collection<String> actualTables = shardTable.getActualTablesOnNamenode(namenode);
-				List<String> tablesOnNamenode = tableStrategy.doSharding(actualTables, routeContext.getTableShardingConditions(shardTable));
+				Collection<Condition> shardValues = routeContext.getTableShardingConditions(shardTable);
+				List<String> tablesOnNamenode = tableStrategy.doSharding(actualTables, shardValues);
+				if(tablesOnNamenode==null || tablesOnNamenode.isEmpty()) tablesOnNamenode = (List<String>)actualTables;
 				this.put(namenode, shardTable.getName(), tablesOnNamenode);
+			}
+			else if(shardTable.isGlobalTable())
+			{
+				this.put(namenode, shardTable.getName(), Arrays.asList(new String[]{shardTable.getName()}));
+			}
+			else if(shardTable.isBroadcastTable())
+			{
+				//this.put("BROADCAST", shardTable.getName(), Arrays.asList(new String[]{shardTable.getName()}));
 			}
 			else
 			{
-				//this.put(namenode, shardTable.getName(), tablesOnNamenode);
+				//只分裤不分表
+				this.put(namenode, shardTable.getName(), Arrays.asList(new String[]{shardTable.getName()}));
 			}
 		}
 	}
@@ -103,13 +132,13 @@ public class DataSourceRouter implements Router{
 	
 	private void put(String namenode, String logicTable, List<String> tablesOnNamenode)
 	{
-		ActualTableAllOnDataSource namenodeFactor = namenodeMap.get(namenode);
-		if(namenodeFactor==null){
-			namenodeFactor = new ActualTableAllOnDataSource(namenode);
-			namenodeMap.put(namenode, namenodeFactor);
+		ActualTableAllOnDataSource namenodeTableMapping = namenodeMap.get(namenode);
+		if(namenodeTableMapping==null){
+			namenodeTableMapping = new ActualTableAllOnDataSource(namenode);
+			namenodeMap.put(namenode, namenodeTableMapping);
 		}
-		ActualTableSingleOnDataSource tableFactor = new ActualTableSingleOnDataSource(logicTable, namenode, tablesOnNamenode);
-		namenodeFactor.addLogicTables(tableFactor);
+		ActualTableSingleOnDataSource tableMapping = new ActualTableSingleOnDataSource(logicTable, namenode, tablesOnNamenode);
+		namenodeTableMapping.addLogicTables(tableMapping);
 	}
 	
 	

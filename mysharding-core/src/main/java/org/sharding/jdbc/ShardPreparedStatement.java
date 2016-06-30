@@ -91,7 +91,7 @@ public class ShardPreparedStatement extends AbstractPreparedStatement  {
 	
 	public PreparedStatement createPreparedStatement(RouteUnit unit) throws SQLException{
 		PreparedStatement statement = preparedStatement(unit);
-		statements.add(statement);
+		addRouteStatements(statement);
 		return statement;
 	}
 	
