@@ -2,7 +2,7 @@ package org.sharding.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,7 +24,7 @@ public abstract class AbstractCompositeResultSet extends AbstractResultsetWrappe
 	 */
 	protected AbstractCompositeResultSet(List<ResultSet> delegates){
 		this.delegates = delegates;
-		this.copyDelegates= new ArrayList<ResultSet>(delegates.size());
+		this.copyDelegates= new LinkedList<ResultSet>();
 	}
 	
 	
